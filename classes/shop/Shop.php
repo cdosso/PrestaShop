@@ -197,7 +197,7 @@ class ShopCore extends ObjectModel
             $row = Db::getInstance()->getRow('
 			SELECT su.physical_uri, su.virtual_uri, su.domain, su.domain_ssl, t.id_theme, t.name, t.directory
 			FROM '._DB_PREFIX_.'shop s
-			LEFT JOIN '._DB_PREFIX_.'shop_url su ON (s.id_shop = su.id_shop)
+			LEFT JOIN '._DB_PREFIX_.'shop_url su ON (s.id_shop = su.id_shop AND  ( su.domain = \''.pSQL(Tools::getHttpHost()).'\' OR su.domain_ssl = \''.pSQL(Tools::getHttpHost()).'\'  ))
 			LEFT JOIN '._DB_PREFIX_.'theme t ON (t.id_theme = s.id_theme)
 			WHERE s.id_shop = '.(int)$this->id.'
 			AND s.active = 1 AND s.deleted = 0 AND su.main = 1');
@@ -321,6 +321,7 @@ class ShopCore extends ObjectModel
             $found_uri = '';
             $is_main_uri = false;
             $host = Tools::getHttpHost();
+
             $request_uri = rawurldecode($_SERVER['REQUEST_URI']);
 
             $sql = 'SELECT s.id_shop, CONCAT(su.physical_uri, su.virtual_uri) AS uri, su.domain, su.main
@@ -332,7 +333,6 @@ class ShopCore extends ObjectModel
 					ORDER BY LENGTH(CONCAT(su.physical_uri, su.virtual_uri)) DESC';
 
             $result = Db::getInstance()->executeS($sql);
-
             $through = false;
             foreach ($result as $row) {
                 // An URL matching current shop was found
@@ -438,7 +438,6 @@ class ShopCore extends ObjectModel
         self::$context_id_shop = $shop->id;
         self::$context_id_shop_group = $shop->id_shop_group;
         self::$context = self::CONTEXT_SHOP;
-
         return $shop;
     }
 
